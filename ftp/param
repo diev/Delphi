@@ -1,0 +1,7 @@
+open 10.194.40.5
+bis
+quit
+cd /home2/bis/quit41d/imp-exp/
+put S:\CB\N_RKC\DAT\BNKSEEK.DBF
+put S:\CB\N_RKC\DAT\BNKDEL.DBF
+bye
