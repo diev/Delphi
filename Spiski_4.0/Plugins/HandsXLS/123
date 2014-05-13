@@ -1,0 +1,39 @@
+{ ***************************************************************************
+   Ручной парсер XLS
+ ****************************************************************************}
+procedure TParserSpiski.HandsXLS(f_str: string);
+var
+  WorkSheet : ExcelWorksheet;
+  index1,kount:integer;
+  sum:Extended;
+begin
+    kount:=0;sum:=0;
+    XLSForm.OLEContainer1.CreateObjectFromFile(f_str, False);
+    XLSForm.ShowModal;
+    XLSForm.OLEContainer1.Close;
+    if XLSForm.ModalResult=mrOk then begin
+    try
+        Mainform.ExcelApplication1.Connect;
+        Mainform.ExcelApplication1.WorkBooks.Open(f_str,EmptyParam,EmptyParam,EmptyParam,EmptyParam, EmptyParam,EmptyParam,EmptyParam,EmptyParam,EmptyParam,EmptyParam,EmptyParam,EmptyParam,EmptyParam,EmptyParam,0);
+        WorkSheet:=Mainform.ExcelApplication1.WorkBooks.Item[1].WorkSheets.Item[1] as ExcelWorksheet;
+        Mainform.lv1.Items.BeginUpdate;
+        for index1:=strtoint(XLSForm.edit6.text) to strtoint(XLSForm.edit7.text) do begin
+          inc(kount);
+          sum:=sum+strtofloat(WorkSheet.Cells.Item[index1,strtoint(XLSForm.edit5.text)].value);
+          MainForm.Addform(inttostr(kount),'','','',trim(WorkSheet.Cells.Item[index1,strtoint(XLSForm.edit1.text)].value),'','',
+          trim(H_acca(WorkSheet.Cells.Item[index1,strtoint(XLSForm.edit4.text)].value)),
+          trim(H_sum(WorkSheet.Cells.Item[index1,strtoint(XLSForm.edit5.text)].value)),'','','','','',
+          trim(H_sum(WorkSheet.Cells.Item[index1,strtoint(XLSForm.edit5.text)].value)),'','','не выгружен','не выгружен','не выгружен');
+        end;
+        Mainform.lv1.Items.EndUpdate;
+        //назначение
+        Mainform.Edit2.Text:='Зачисление по списку, #5';
+        // выводим статистику
+        MainForm.Statistics(inttostr(kount),floattostr(sum));
+    finally
+        Mainform.ExcelApplication1.Quit;
+        Mainform.ExcelApplication1.Disconnect;
+    end;
+  end;{if}
+end;
+

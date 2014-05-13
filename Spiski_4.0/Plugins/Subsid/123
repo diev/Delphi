@@ -1,0 +1,69 @@
+{ ***************************************************************************
+   Субсидии
+ ****************************************************************************}
+procedure TParserSpiski.SubXLS(file_str: string);
+var
+  WorkSheet : ExcelWorksheet;
+  KolFIO,Kolacca,Kolsum,index1,index2,BegStr,kount:integer;
+  sum:Extended;
+  fam,acca:string;
+begin
+try
+    Mainform.ExcelApplication1.Connect;
+    Mainform.ExcelApplication1.WorkBooks.Open(file_str,EmptyParam,EmptyParam,EmptyParam,EmptyParam, EmptyParam,EmptyParam,EmptyParam,EmptyParam,EmptyParam,EmptyParam,EmptyParam,EmptyParam,EmptyParam,EmptyParam,0);
+    WorkSheet:=Mainform.ExcelApplication1.WorkBooks.Item[1].WorkSheets.Item[1] as ExcelWorksheet;
+    KolFIO:=3;//должна быть
+    Kolacca:=7;//должна быть
+    Kolsum:=15; // ищем колонки
+    BegStr:=1;
+    WorkSheet.Cells.SpecialCells(xlCellTypeLastCell,EmptyParam).Activate;
+  // ищем  колонки
+    for index1:=1 to Mainform.ExcelApplication1.ActiveCell.Row do begin
+      if BegStr<>1 then break;
+      for index2:=1 to Mainform.ExcelApplication1.ActiveCell.Column do
+        if pos('азмер',WorkSheet.Cells.Item[index1,index2].value)<>0 then begin
+         // Kolsum:=index2;
+          BegStr:=index1+2;
+          Break;
+        end;
+    end;
+    Mainform.lv1.Items.BeginUpdate;
+    kount:=0;sum:=0;
+    // старый
+{    for index1:=BegStr to Mainform.ExcelApplication1.ActiveCell.Row do // непустые строчки и иск. итоговую
+      if (string(WorkSheet.Cells.Item[index1,Kolsum].value)<>'') and (string(WorkSheet.Cells.Item[index1,Kolsum-4].value)<>'') then begin
+          inc(kount);
+          sum:=sum+strtofloat(WorkSheet.Cells.Item[index1,Kolsum].value);
+            if string(WorkSheet.Cells.Item[index1,1].value)<>'' then begin
+              fam:=Hstr(trim(WorkSheet.Cells.Item[index1,KolFIO].value)+' '+trim(WorkSheet.Cells.Item[index1+1,KolFIO].value));
+              acca:=trim(WorkSheet.Cells.Item[index1,Kolacca].value);
+            end;
+          MainForm.Addform(inttostr(kount),'','','',fam,'','',
+          trim(H_acca(acca)),
+          trim(H_sum(WorkSheet.Cells.Item[index1,Kolsum].value)),'','','','','',
+          trim(H_sum(WorkSheet.Cells.Item[index1,Kolsum].value)),'','','не выгружен','не выгружен','не выгружен');
+        end;{for}
+
+    for index1:=BegStr to Mainform.ExcelApplication1.ActiveCell.Row do // непустые строчки и иск. итоговую
+      if (string(WorkSheet.Cells.Item[index1,Kolsum].value)<>'') and (string(WorkSheet.Cells.Item[index1,KolFIO-1].value)<>'') then begin
+          inc(kount);
+          sum:=sum+strtofloat(WorkSheet.Cells.Item[index1,Kolsum].value);
+          fam:=Hstr(trim(WorkSheet.Cells.Item[index1,KolFIO].value));
+          acca:=trim(WorkSheet.Cells.Item[index1,Kolacca].value);
+
+          MainForm.Addform(inttostr(kount),'','','',fam,'','',
+          trim(H_acca(acca)),
+          trim(H_sum(WorkSheet.Cells.Item[index1,Kolsum].value)),'','','','','',
+          trim(H_sum(WorkSheet.Cells.Item[index1,Kolsum].value)),'','','не выгружен','не выгружен','не выгружен');
+        end;{for}
+
+Mainform.lv1.Items.EndUpdate;
+//назначение
+Mainform.Edit2.Text:=WorkSheet.Cells.Item[2,1].value+', #5';
+finally
+    Mainform.ExcelApplication1.Quit;
+    Mainform.ExcelApplication1.Disconnect;
+end;
+// выводим статистику
+MainForm.Statistics(inttostr(kount),FormatFloat('0.00',sum));
+end;
